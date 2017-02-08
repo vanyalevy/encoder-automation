@@ -1,0 +1,65 @@
+#!/bin/bash
+
+function empty_string() {
+    local __string=$1
+    if [[ -z "${__string// }" ]]; then
+        return 0
+    else
+        return 1
+    fi
+}
+ 
+function get_password () { 
+# 2 paramters
+# $1 - message to display
+# $2 - password to return to the caller
+
+    message=$1i
+    local __password1=""
+    local __password2=""
+    while true; do
+        echo -n "Enter $1 : " 
+        read -s __password1; echo
+    	echo -n "Confirm $1 : "
+    	read -s __password2; echo
+    	if [ $__password1 != $__password2 ]; then
+        	echo "Passwords do not match!!"; echo
+                __password1=""
+                __password2=""
+    	else 
+        	eval "$2=\$__password1"
+                return
+    	fi
+    done
+}
+
+### Main Routine
+
+# If these are empty, the operator will be prompted to enter valid passwords...
+OLDPASS='manager'
+NEWPASS=''
+
+if empty_string $OLDPASS; then
+    get_password "Current Password on encoder(s)" OLDPASS
+fi
+
+if empty_string $NEWPASS; then
+    get_password "New Password for encoder(s)" NEWPASS
+fi
+
+if [ $OLDPASS == $NEWPASS ]; then
+   echo "Old password and new password are the same, terminating"
+   exit
+fi
+
+echo 'These are the existing and new passwords to be used:'
+echo "OLDPASS : "$OLDPASS"   ----   NEWPASS: "$NEWPASS;
+echo 'Will now set passwords on encoders, press ctrl+C to cancel, press enter to continue:'
+read
+
+# Set passwords for all the encoders in the file "ip_list"
+for MAKITO in `cat ip_list`; do
+    echo "Changing password for: "$MAKITO"..."
+    ssh admin@$MAKITO "echo -e '$OLDPASS\n$NEWPASS\n$NEWPASS' | passwd"
+done
+

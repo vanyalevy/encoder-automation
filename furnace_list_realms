@@ -1,0 +1,9 @@
+#!bin/bash
+# Return a list of Furnace realms visible from the portal
+# Run as sudo.
+# Note: Normally at a customer/production site there will only be one realm, but it's good to check....
+#
+
+vfconfigd-util list | awk '{ print $3 }' | awk '/./' | sed '/Realm/d' | sed '/:/d' | awk '!a[$0]++'
+
+

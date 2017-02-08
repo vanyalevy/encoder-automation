@@ -1,0 +1,7 @@
+#!bin/bash
+
+# Run this as sudo on a portal
+# It will return an IP list of all encoders visible to the portal, regardless of realm
+# It will only return the IP's of the online encoders....
+
+/opt/haivision/usr/bin/vfconfigd-util list | grep ENCODER |  awk '{ print $5 }' | sed 's~searching~~' | sed 's~offline~~' | sed '/^$/d'

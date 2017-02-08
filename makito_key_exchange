@@ -1,0 +1,30 @@
+#!/bin/bash
+#
+# Install public key of your host as an authorized key on all the encoders in the file: $ip_list
+
+# Optionally Specify a location for the IP_LIST file with the IP's of all the encoders
+# default is ./ip_list 
+if [ "$#" -ge 1 ]; then 
+	ip_list=$1
+else
+	ip_list="ip_list"
+fi
+
+if [[ ! -f $ip_list ]]; then
+	return 1
+fi
+
+
+# Make key if one does not exist
+if [[ ! -f ~/.ssh/id_rsa.pub ]]
+then
+   ssh-keygen -t rsa
+fi
+
+# Distribute key to list of encoders
+# The operator will be asked to enter the current password of the encoder twice
+for makito in `cat $ip_list`
+do
+   ssh admin@$makito "mkdir ~/.ssh; chmod 0700 ~/.ssh"
+   scp ~/.ssh/id_rsa.pub admin@$makito:~/.ssh/authorized_keys
+done
